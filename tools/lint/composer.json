@@ -1,0 +1,15 @@
+{
+    "name": "kreiswolke/kw-form-antispam-lint",
+    "description": "Dev-only linting toolchain: WordPress Coding Standards + PHP 7.4 compatibility checks. Never shipped.",
+    "license": "GPL-2.0-or-later",
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.10",
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<ruleset name="KW Form Antispam">
+	<description>WordPress.org release standards plus PHP 7.4 compatibility enforcement.</description>
+
+	<file>plugin</file>
+
+	<!-- Third-party vendored asset: not ours to restyle. -->
+	<exclude-pattern>plugin/assets/vendor/*</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+	<arg name="parallel" value="8"/>
+
+	<!--
+		We develop on PHP 8.2 but ship a PHP 7.4 floor (matching Kadence Blocks).
+		Nothing here can run 7.4 locally, so compatibility is enforced statically.
+	-->
+	<config name="testVersion" value="7.4-"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<config name="minimum_wp_version" value="6.6"/>
+
+	<rule ref="WordPress">
+		<!-- Namespaced code: WPCS's global-scope prefix rule misfires on it. -->
+		<exclude name="WordPress.NamingConventions.PrefixAllGlobals"/>
+	</rule>
+
+	<!-- Every global thing we do declare must still carry our prefix. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="kwfa"/>
+				<element value="KWFA"/>
+				<element value="Kreiswolke\FormAntispam"/>
+			</property>
+		</properties>
+		<include-pattern>plugin/kw-form-antispam.php</include-pattern>
+		<include-pattern>plugin/uninstall.php</include-pattern>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="kw-form-antispam"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

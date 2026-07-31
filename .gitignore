@@ -7,9 +7,12 @@
 # Build output: installable plugin zips for the WP admin installer.
 /deploy/
 
-# Build & dependency artefacts
-/node_modules/
-/vendor/
+# Dev-only Composer trees under tools/. NOT a blanket "vendor/" rule — the
+# vendored ALTCHA widget lives in plugin/assets/vendor/ and must be committed,
+# because it ships with the plugin.
+tools/**/vendor/
+node_modules/
+composer.lock
 *.zip
 
 # Local/editor noise

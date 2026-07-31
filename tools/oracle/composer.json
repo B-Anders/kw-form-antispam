@@ -1,0 +1,25 @@
+{
+    "name": "kreiswolke/kw-form-antispam-oracle",
+    "description": "Dev-only differential test harness: validates the KW Form Antispam ALTCHA core against the official altcha-org/altcha PHP library used as an oracle. Never shipped.",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "altcha-org/altcha": "^2.1",
+        "nikic/php-parser": "^5.0",
+        "phpunit/phpunit": "^10.5 || ^11.5"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kreiswolke\\FormAntispam\\Oracle\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}
