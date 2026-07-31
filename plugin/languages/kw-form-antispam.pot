@@ -1,0 +1,127 @@
+# Copyright (C) 2026 Kreiswolke
+# This file is distributed under the GPL-2.0-or-later license.
+msgid ""
+msgstr ""
+"Project-Id-Version: KW Form Antispam 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/kw-form-antispam\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-31T11:27:29+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: kw-form-antispam\n"
+
+#: includes/class-status.php:141
+msgid "A challenge could not be generated on the last request."
+msgstr ""
+
+#: includes/class-frontend.php:218
+msgid "Cancel"
+msgstr ""
+
+#. translators: Prompt on an audio or image code challenge. This plugin never issues one, but the widget expects the key to exist.
+#: includes/class-frontend.php:220
+msgid "Enter code"
+msgstr ""
+
+#: includes/class-frontend.php:221
+msgid "Enter the code you hear. Press Space to play the audio."
+msgstr ""
+
+#. translators: Label next to the verification checkbox shown above the form's submit button.
+#: includes/class-frontend.php:228
+msgid "I am not a robot"
+msgstr ""
+
+#. translators: %s: the specific reason protection is unavailable.
+#: includes/class-status.php:116
+msgid "KW Form Antispam: spam protection is currently OFF. %s Form submissions are still being accepted — the plugin never blocks a form because of its own failure."
+msgstr ""
+
+#: includes/class-status.php:137
+msgid "Kadence Blocks is not active, so there are no Advanced Forms to protect."
+msgstr ""
+
+#: includes/class-frontend.php:229
+msgid "Loading…"
+msgstr ""
+
+#: includes/class-frontend.php:230
+msgid "Reload"
+msgstr ""
+
+#: includes/class-frontend.php:226
+msgid "Request an audio challenge"
+msgstr ""
+
+#: includes/class-frontend.php:217
+msgid "Spam protection"
+msgstr ""
+
+#: includes/class-rest-challenge.php:115
+#: includes/class-rest-challenge.php:128
+#: includes/class-rest-challenge.php:149
+#: includes/class-rest-challenge.php:160
+msgid "Spam protection is temporarily unavailable."
+msgstr ""
+
+#: includes/class-status.php:139
+msgid "The challenge/verification component of the plugin could not be loaded; reinstall the plugin."
+msgstr ""
+
+#: includes/class-status.php:138
+msgid "The signing secret is missing or unreadable; visit any admin page as an administrator to have it regenerated."
+msgstr ""
+
+#: includes/class-status.php:142
+msgid "The single-use store (transients) is not writable, so a solved challenge could be reused until it expires."
+msgstr ""
+
+#: includes/class-frontend.php:222
+msgid "To continue, please enter the code shown in the image below."
+msgstr ""
+
+#: includes/class-rest-challenge.php:104
+msgid "Too many verification requests. Please wait a moment and try again."
+msgstr ""
+
+#: includes/class-frontend.php:224
+msgid "Verification expired. Please try again."
+msgstr ""
+
+#: includes/class-frontend.php:223
+msgid "Verification failed. Please try again."
+msgstr ""
+
+#. translators: Shown by the browser if the form is submitted while verification is still running.
+#: includes/class-frontend.php:236
+msgid "Verification is still running — please wait a moment."
+msgstr ""
+
+#: includes/class-status.php:140
+msgid "Verification raised an unexpected error on the last submission."
+msgstr ""
+
+#: includes/class-frontend.php:232
+msgid "Verification required"
+msgstr ""
+
+#: includes/class-frontend.php:233
+msgid "Verified"
+msgstr ""
+
+#: includes/class-frontend.php:231
+msgid "Verify"
+msgstr ""
+
+#: includes/class-frontend.php:234
+msgid "Verifying…"
+msgstr ""
+
+#: includes/class-gate.php:329
+msgid "We could not verify that this submission came from a browser. Please reload the page and try again."
+msgstr ""
+

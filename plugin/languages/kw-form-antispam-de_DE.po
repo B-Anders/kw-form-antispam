@@ -1,0 +1,84 @@
+# German translation for KW Form Antispam.
+# Copyright (C) 2026 Kreiswolke
+# This file is distributed under the GPL-2.0-or-later license.
+msgid ""
+msgstr "Project-Id-Version: KW Form Antispam 0.1.0\nReport-Msgid-Bugs-To: https://wordpress.org/support/plugin/kw-form-antispam\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPO-Revision-Date: 2026-07-31 11:28+0000\nLanguage: de_DE\nPlural-Forms: nplurals=2; plural=(n != 1);\nX-Domain: kw-form-antispam\n"
+
+msgid "A challenge could not be generated on the last request."
+msgstr "Bei der letzten Anfrage konnte keine Aufgabe erzeugt werden."
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Enter code"
+msgstr "Code eingeben"
+
+msgid "Enter the code you hear. Press Space to play the audio."
+msgstr "Geben Sie den Code ein, den Sie hören. Drücken Sie die Leertaste, um die Audioaufnahme abzuspielen."
+
+msgid "I am not a robot"
+msgstr "Ich bin kein Roboter"
+
+msgid "KW Form Antispam: spam protection is currently OFF. %s Form submissions are still being accepted — the plugin never blocks a form because of its own failure."
+msgstr "KW Form Antispam: Der Spamschutz ist derzeit AUS. %s Formulareinsendungen werden weiterhin angenommen – das Plugin blockiert ein Formular niemals wegen eines eigenen Fehlers."
+
+msgid "Kadence Blocks is not active, so there are no Advanced Forms to protect."
+msgstr "Kadence Blocks ist nicht aktiv, es gibt also keine Advanced Forms zu schützen."
+
+msgid "Loading…"
+msgstr "Wird geladen …"
+
+msgid "Reload"
+msgstr "Neu laden"
+
+msgid "Request an audio challenge"
+msgstr "Audio-Aufgabe anfordern"
+
+msgid "Spam protection"
+msgstr "Spamschutz"
+
+msgid "Spam protection is temporarily unavailable."
+msgstr "Der Spamschutz ist vorübergehend nicht verfügbar."
+
+msgid "The challenge/verification component of the plugin could not be loaded; reinstall the plugin."
+msgstr "Die Prüfkomponente des Plugins konnte nicht geladen werden; bitte installieren Sie das Plugin erneut."
+
+msgid "The signing secret is missing or unreadable; visit any admin page as an administrator to have it regenerated."
+msgstr "Der Signierschlüssel fehlt oder ist unlesbar; rufen Sie als Administrator eine beliebige Adminseite auf, damit er neu erzeugt wird."
+
+msgid "The single-use store (transients) is not writable, so a solved challenge could be reused until it expires."
+msgstr "Der Speicher für Einmal-Lösungen (Transients) ist nicht beschreibbar, eine gelöste Aufgabe könnte daher bis zu ihrem Ablauf wiederverwendet werden."
+
+msgid "To continue, please enter the code shown in the image below."
+msgstr "Bitte geben Sie zum Fortfahren den Code aus dem Bild unten ein."
+
+msgid "Too many verification requests. Please wait a moment and try again."
+msgstr "Zu viele Prüfanfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut."
+
+msgid "Verification expired. Please try again."
+msgstr "Die Überprüfung ist abgelaufen. Bitte versuchen Sie es erneut."
+
+msgid "Verification failed. Please try again."
+msgstr "Die Überprüfung ist fehlgeschlagen. Bitte versuchen Sie es erneut."
+
+msgid "Verification is still running — please wait a moment."
+msgstr "Die Überprüfung läuft noch – bitte warten Sie einen Moment."
+
+msgid "Verification raised an unexpected error on the last submission."
+msgstr "Bei der letzten Einsendung ist während der Prüfung ein unerwarteter Fehler aufgetreten."
+
+msgid "Verification required"
+msgstr "Überprüfung erforderlich"
+
+msgid "Verified"
+msgstr "Überprüft"
+
+msgid "Verify"
+msgstr "Überprüfen"
+
+msgid "Verifying…"
+msgstr "Wird überprüft …"
+
+msgid "We could not verify that this submission came from a browser. Please reload the page and try again."
+msgstr "Wir konnten nicht bestätigen, dass diese Einsendung aus einem Browser stammt. Bitte laden Sie die Seite neu und versuchen Sie es erneut."
+
