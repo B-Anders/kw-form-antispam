@@ -21,3 +21,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+
+# PHPUnit run caches
+.phpunit.result.cache
+.phpunit.cache/
