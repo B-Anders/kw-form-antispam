@@ -73,10 +73,11 @@ It stubs WordPress. It is not a substitute for testing on a real site, and it
 proves nothing about:
 
 - **The browser half.** The ALTCHA widget, the glue script, custom-element
-  upgrade timing, whether relaxing the `required` attribute survives Svelte's
-  next DOM patch, and the event ordering between the widget's capture-phase
-  submit listener and Kadence's. `Solver.php` imitates the widget's *output*, not
-  its behaviour.
+  upgrade timing, and anything visual. `Solver.php` imitates the widget's
+  *output*, not its behaviour. The glue script has its own suite in
+  `tools/js-tests/`, which runs against a real DOM; the visibility filter is
+  covered here, in `FrontendTest.php`, because it is a rendering decision made
+  in PHP.
 - **Real Kadence.** The pipeline in `submit()` is a model built from reading
   Kadence Blocks 3.7.8.2. If Kadence changes, this suite keeps passing while the
   live site breaks. That is the single biggest gap, and the reason the drift

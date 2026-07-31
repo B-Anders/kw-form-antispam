@@ -9,6 +9,7 @@ namespace Kreiswolke\FormAntispam\Tests;
 
 use Kreiswolke\FormAntispam\Frontend;
 use Kreiswolke\FormAntispam\Gate;
+use Kreiswolke\FormAntispam\Plugin;
 use WP_Stub_State;
 
 /**
@@ -39,9 +40,26 @@ final class FrontendTest extends TestCase {
 	 * @return void
 	 */
 	protected function tearDown(): void {
-		unset( WP_Stub_State::$hooks['kwfa_widget_configuration'] );
+		unset(
+			WP_Stub_State::$hooks['kwfa_widget_configuration'],
+			WP_Stub_State::$hooks['kwfa_widget_visible']
+		);
 
 		parent::tearDown();
+	}
+
+	/**
+	 * Make the widget render visibly for the current test.
+	 *
+	 * @return void
+	 */
+	private function make_visible() {
+		add_filter(
+			'kwfa_widget_visible',
+			function () {
+				return true;
+			}
+		);
 	}
 
 	// -------------------------------------------------------------------------
@@ -159,6 +177,48 @@ final class FrontendTest extends TestCase {
 		}
 	}
 
+	/**
+	 * The deferred-submission settings reach the glue script.
+	 *
+	 * @return void
+	 */
+	public function test_deferred_submit_settings_are_localized() {
+		$data = WP_Stub_State::$localized['kwfa-widget']['data'];
+
+		$this->assertSame( 15000, $data['waitTimeout'] );
+		$this->assertSame( 750, $data['noticeDelay'] );
+		$this->assertNotSame( '', $data['ui']['waiting'], 'A held submission needs something to say.' );
+	}
+
+	/**
+	 * Both are filterable, and clamped so a filter cannot produce an unbounded
+	 * hold or a message that never appears.
+	 *
+	 * @return void
+	 */
+	public function test_deferred_submit_settings_are_clamped() {
+		add_filter(
+			'kwfa_submit_wait_timeout',
+			function () {
+				return 10 * MINUTE_IN_SECONDS * 1000;
+			}
+		);
+		add_filter(
+			'kwfa_submit_notice_delay',
+			function () {
+				return -5;
+			}
+		);
+
+		$this->assertSame( 60000, Plugin::submit_wait_timeout(), 'A hold must stay bounded.' );
+		$this->assertSame( 0, Plugin::submit_notice_delay() );
+
+		unset(
+			WP_Stub_State::$hooks['kwfa_submit_wait_timeout'],
+			WP_Stub_State::$hooks['kwfa_submit_notice_delay']
+		);
+	}
+
 	// -------------------------------------------------------------------------
 	// What the markup says
 	// -------------------------------------------------------------------------
@@ -200,14 +260,104 @@ final class FrontendTest extends TestCase {
 		$this->assertStringNotContainsString( 'keyPrefix', $html );
 	}
 
+	// -------------------------------------------------------------------------
+	// Visibility
+	// -------------------------------------------------------------------------
+
 	/**
-	 * The floating and overlay display modes have a WCAG 2.1.1 keyboard
-	 * failure, so the plugin locks the widget to standard mode.
+	 * The widget is invisible by default: the challenge is solved from the
+	 * visitor's first interaction, so the checkbox is never actually used.
 	 *
 	 * @return void
 	 */
-	public function test_display_mode_is_locked_to_standard() {
-		$this->assertStringContainsString( 'display="standard"', $this->inject() );
+	public function test_widget_is_invisible_by_default() {
+		$html = $this->inject();
+
+		$this->assertStringContainsString( 'display="invisible"', $html );
+		$this->assertStringNotContainsString( 'display="standard"', $html );
+	}
+
+	/**
+	 * Invisible means nothing is drawn, so it must not sit in a Kadence field
+	 * wrapper — that carries the form's field spacing and would leave a gap.
+	 *
+	 * @return void
+	 */
+	public function test_invisible_widget_has_no_field_wrapper() {
+		$html = $this->inject();
+
+		$this->assertStringNotContainsString( 'kb-adv-form-field', str_replace( self::SUBMIT_HTML, '', $html ) );
+		$this->assertStringStartsWith( '<altcha-widget', $html );
+	}
+
+	/**
+	 * A site that wants the classic checkbox can have it.
+	 *
+	 * @return void
+	 */
+	public function test_visibility_filter_renders_the_visible_widget() {
+		$this->make_visible();
+
+		$html = $this->inject();
+
+		$this->assertStringContainsString( 'display="standard"', $html );
+		$this->assertStringNotContainsString( 'display="invisible"', $html );
+		$this->assertStringContainsString( 'kwfa-field', $html, 'The visible widget keeps its field wrapper.' );
+	}
+
+	/**
+	 * The filter receives the form ID, so visibility can differ per form.
+	 *
+	 * @return void
+	 */
+	public function test_visibility_filter_receives_the_form_id() {
+		add_filter(
+			'kwfa_widget_visible',
+			function ( $visible, $form_id ) {
+				return 7 === $form_id;
+			},
+			10,
+			2
+		);
+
+		$this->assertStringContainsString( 'display="standard"', $this->inject( 7 ) );
+		$this->assertStringContainsString( 'display="invisible"', $this->inject( 42 ) );
+	}
+
+	/**
+	 * Whichever mode is chosen, it is never one of the two the plugin rejected
+	 * on WCAG 2.1.1 grounds: both render their close control as a non-focusable
+	 * <div role="button">. Invisible is display:none on the widget root and
+	 * renders no close control at all.
+	 *
+	 * @return void
+	 */
+	public function test_inaccessible_display_modes_are_unreachable() {
+		foreach ( array( false, true ) as $visible ) {
+			if ( $visible ) {
+				$this->make_visible();
+			}
+
+			$html = $this->inject();
+
+			$this->assertStringNotContainsString( 'display="floating"', $html );
+			$this->assertStringNotContainsString( 'display="overlay"', $html );
+			$this->assertStringNotContainsString( 'display="bar"', $html );
+		}
+	}
+
+	/**
+	 * The visible widget keeps its minimum animation time so the checkbox
+	 * animation is perceptible; the invisible one has nothing to animate.
+	 *
+	 * @return void
+	 */
+	public function test_invisible_widget_does_not_delay_for_animation() {
+		$this->assertSame( 0, $this->configuration( $this->inject() )['minDuration'] );
+
+		$this->make_visible();
+
+		$this->assertSame( 300, $this->configuration( $this->inject() )['minDuration'] );
 	}
 
 	/**

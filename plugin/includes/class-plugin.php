@@ -149,6 +149,36 @@ final class Plugin {
 	}
 
 	/**
+	 * How long the browser may hold a submission waiting for verification.
+	 *
+	 * A visitor who presses submit before the background check has finished has
+	 * their submission held and sent automatically once it completes. This
+	 * bounds that wait: past it the submission is released regardless, because
+	 * a spinner that never ends is worse than a rejection the visitor can retry.
+	 *
+	 * @return int Milliseconds.
+	 */
+	public static function submit_wait_timeout() {
+		$timeout = (int) apply_filters( 'kwfa_submit_wait_timeout', 15000 );
+
+		return max( 1000, min( $timeout, 60000 ) );
+	}
+
+	/**
+	 * How long a held submission may stay silent before the visitor is told
+	 * something is happening.
+	 *
+	 * With no visible widget, an unexplained pause reads as a broken button.
+	 *
+	 * @return int Milliseconds.
+	 */
+	public static function submit_notice_delay() {
+		$delay = (int) apply_filters( 'kwfa_submit_notice_delay', 750 );
+
+		return max( 0, min( $delay, 10000 ) );
+	}
+
+	/**
 	 * Binding string carried inside the signed challenge parameters.
 	 *
 	 * Ties a challenge to one form so a solution minted for form A cannot be

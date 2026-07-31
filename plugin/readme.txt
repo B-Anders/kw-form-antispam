@@ -4,7 +4,7 @@ Tags: spam, antispam, captcha, kadence, altcha, proof-of-work
 Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,10 @@ verifies. Sending one message costs nothing noticeable. Sending fifty thousand
 becomes expensive.
 
 There is no puzzle to solve, no traffic light to find, no cookie banner to
-extend, and no account to create.
+extend, and no account to create. By default there is nothing to see at all: the
+check runs in the background from the moment a visitor starts filling the form,
+and if they press send before it has finished, their submission is held for a
+moment and sent automatically — no second click.
 
 = How it is different =
 
@@ -29,10 +32,11 @@ extend, and no account to create.
 * **No personal data in the mechanism.** No cookies, no fingerprinting, no
   tracking pixels. The challenge contains a random nonce, a salt and a form ID —
   nothing about the visitor. See the Privacy section below.
-* **Accessible.** The visitor sees a real checkbox with a real label, which
-  works with a keyboard and with a screen reader. There is no visual or audio
-  puzzle to pass. Relevant wherever the European Accessibility Act (in Germany,
-  the BFSG) applies.
+* **Accessible.** There is no visual or audio puzzle to pass, nothing to click,
+  and nothing extra in the tab order. If a submission has to wait, the visitor
+  is told so through a polite live region rather than being left with a button
+  that appears not to work. Relevant wherever the European Accessibility Act
+  (in Germany, the BFSG) applies.
 * **Stacks with what you already run.** It coexists with Kadence's own honeypot
   and its native CAPTCHA field.
 * **Fails open, loudly.** If the plugin's own machinery ever breaks — a missing
@@ -40,6 +44,22 @@ extend, and no account to create.
   specific admin notice telling you protection is off and why. A client's
   contact form going dark is worse than a window of spam. Missing or invalid
   *solutions* are still rejected: that is the plugin working, not failing.
+
+= Nothing to see, and nothing to wait for =
+
+The verification widget is invisible by default. The work starts as soon as the
+visitor first touches the form, so by the time they press send it is normally
+already done and the form behaves exactly as it did before.
+
+If they are quicker than the check, the submission is held and sent
+automatically the moment verification completes. Nobody has to press send twice.
+If the wait becomes noticeable, a short message appears next to the button. The
+wait is bounded: if verification cannot complete in time, the submission is sent
+anyway and the server decides — the plugin will not trap a visitor behind a
+spinner.
+
+Prefer the classic "I am not a robot" checkbox? Return true from the
+`kwfa_widget_visible` filter.
 
 = Rate limiting =
 
@@ -106,6 +126,12 @@ Yes. Nothing time-sensitive is written into the page. The challenge is fetched
 from a REST endpoint at interaction time, and that endpoint sends no-cache
 headers.
 
+= I liked the checkbox. Can I have it back? =
+
+Yes:
+
+`add_filter( 'kwfa_widget_visible', '__return_true' );`
+
 = Can I change the rejection message? =
 
 Yes, with the `kwfa_rejection_message` filter. The return value is escaped
@@ -153,12 +179,30 @@ to describe what this plugin is compatible with.
 
 == Changelog ==
 
+= 0.2.0 =
+* The verification widget is now invisible by default. The check already ran in
+  the background, so the checkbox was decoration; removing it also removes an
+  unstyled panel from every form. Use the `kwfa_widget_visible` filter to bring
+  the checkbox back.
+* A submission made before verification finishes is now held and sent
+  automatically once it completes, instead of asking the visitor to press send a
+  second time. A short message appears if the wait becomes noticeable, the wait
+  is bounded, and a timeout or error releases the submission rather than
+  trapping the visitor.
+* Repeated clicks while a submission is held now send it exactly once.
+* New filters: `kwfa_widget_visible`, `kwfa_submit_wait_timeout`,
+  `kwfa_submit_notice_delay`.
+
 = 0.1.0 =
 * First release. Proof-of-work protection for Kadence Advanced Form blocks,
   self-hosted challenge endpoint with rate limiting, single-use solutions,
   fail-open behaviour with admin reporting.
 
 == Upgrade Notice ==
+
+= 0.2.0 =
+The verification checkbox is now invisible by default, and a submission made
+before the check finishes is completed automatically. No configuration needed.
 
 = 0.1.0 =
 First release.

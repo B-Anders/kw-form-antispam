@@ -80,8 +80,14 @@ final class Frontend {
 			self::GLUE_HANDLE,
 			'kwfaWidgetData',
 			array(
-				'language' => self::language(),
-				'strings'  => self::strings(),
+				'language'    => self::language(),
+				'strings'     => self::strings(),
+				'waitTimeout' => Plugin::submit_wait_timeout(),
+				'noticeDelay' => Plugin::submit_notice_delay(),
+				'ui'          => array(
+					/* translators: Shown next to the submit button when a visitor submits before the background check has finished. The submission is sent automatically once it has. */
+					'waiting' => __( 'Just a moment — finishing the spam check, then sending your message.', 'kw-form-antispam' ),
+				),
 			)
 		);
 	}
@@ -139,15 +145,31 @@ final class Frontend {
 	 * @return string
 	 */
 	private static function widget_html( $form_id ) {
+		/**
+		 * Filters whether the verification widget is rendered visibly.
+		 *
+		 * The default is invisible. With the challenge solved in the background
+		 * from the visitor's first interaction, the checkbox is never actually
+		 * used, and an unstyled third-party panel on every form is a cost with
+		 * no matching benefit. Return true for the classic checkbox.
+		 *
+		 * @param bool $visible Whether to render the widget. Default false.
+		 * @param int  $form_id Kadence form CPT post ID.
+		 */
+		$visible = (bool) apply_filters( 'kwfa_widget_visible', false, $form_id );
+
+		// Only two modes are ever emitted. 'floating' and 'overlay' render their
+		// close control as a non-focusable <div role="button"> — a WCAG 2.1.1
+		// keyboard failure — so they are not reachable from here at all.
+		// 'invisible' is display:none on the widget root and renders no close
+		// control of any kind (Widget.svelte:1369, widget.scss:728).
+		$display = $visible ? 'standard' : 'invisible';
+
 		$config = array(
-			// The floating and overlay display modes render their close control
-			// as a non-focusable <div role="button"> — a WCAG 2.1.1 keyboard
-			// failure. Standard mode uses a real checkbox and label, so the
-			// plugin locks it there and does not expose the choice.
 			'hideFooter'                => true,
 			'hideLogo'                  => true,
 			'humanInteractionSignature' => false,
-			'minDuration'               => 300,
+			'minDuration'               => $visible ? 300 : 0,
 			'test'                      => false,
 			'type'                      => 'checkbox',
 		);
@@ -180,13 +202,22 @@ final class Frontend {
 			$json = '{}';
 		}
 
-		return sprintf(
-			'<div class="kb-adv-form-field kwfa-field"><altcha-widget class="kwfa-widget" name="%1$s" display="standard" auto="onfocus" language="%2$s" challenge="%3$s" configuration="%4$s"></altcha-widget></div>',
+		$widget = sprintf(
+			'<altcha-widget class="kwfa-widget" name="%1$s" display="%2$s" auto="onfocus" language="%3$s" challenge="%4$s" configuration="%5$s"></altcha-widget>',
 			esc_attr( Gate::FIELD ),
+			esc_attr( $display ),
 			esc_attr( self::language() ),
 			esc_url( Rest_Challenge::url( $form_id ) ),
 			esc_attr( $json )
 		);
+
+		if ( ! $visible ) {
+			// No field wrapper: `kb-adv-form-field` carries Kadence's field
+			// spacing, which would leave a gap where nothing is drawn.
+			return $widget;
+		}
+
+		return '<div class="kb-adv-form-field kwfa-field">' . $widget . '</div>';
 	}
 
 	/**
