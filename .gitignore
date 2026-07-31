@@ -1,0 +1,20 @@
+# Internal working documents — brief, plans, research notes. Local only.
+/docs/
+
+# Third-party sources pulled for research only — never shipped, never committed.
+/research/
+
+# Build output: installable plugin zips for the WP admin installer.
+/deploy/
+
+# Build & dependency artefacts
+/node_modules/
+/vendor/
+*.zip
+
+# Local/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
