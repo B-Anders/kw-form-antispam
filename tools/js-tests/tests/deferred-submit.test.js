@@ -172,7 +172,7 @@ test( 'a form without a widget is never interfered with', async () => {
 
 test( 'the held submission keeps the visitor typed data', async () => {
 	const ctx = await setup( { state: 'unverified' } );
-	const field = ctx.document.getElementById( 'field1' );
+	const field = ctx.document.getElementById( 'field-42' );
 
 	field.value = 'Please call me back';
 

@@ -1,6 +1,6 @@
 /**
- * Test harness: a jsdom page carrying a Kadence Advanced Form and a stand-in
- * for the ALTCHA widget, with the real glue script loaded into it.
+ * Test harness: a jsdom page carrying one or more Kadence Advanced Forms and a
+ * stand-in for the ALTCHA widget, with the real glue script loaded into it.
  *
  * The stand-in reproduces the parts of the widget's contract the glue depends
  * on, taken from research/altcha-widget-pinned/src/:
@@ -15,6 +15,11 @@
  *   - display="invisible" meaning the root     widget.scss:728
  *     is display:none, nothing else changed
  *
+ * The form markup and the success event mirror the licensed Kadence source in
+ * docs/Kadence/kadence-blocks/ — in particular `_kb_adv_form_id` carries
+ * `{form CPT post id}-cpt-id`, and the success event's `detail.uniqueId` is a
+ * copy of that input's value.
+ *
  * Like the Kadence pipeline model in the PHP suite, this is a model. It is
  * faithful to the source as read, not to a running browser.
  */
@@ -26,30 +31,41 @@ const path = require( 'path' );
 const { JSDOM } = require( 'jsdom' );
 
 const GLUE = path.join( __dirname, '..', '..', '..', 'plugin', 'assets', 'js', 'kwfa-widget.js' );
+const GLUE_SOURCE = fs.readFileSync( GLUE, 'utf8' );
 
-const FORM_HTML = `
-<form id="kb-adv-form-42-cpt-id" class="kb-advanced-form" method="post">
+/**
+ * Markup for one Kadence Advanced Form.
+ *
+ * @param {number|string} formId Form CPT post ID.
+ */
+function formHtml( formId ) {
+	const uniqueId = `${ formId }-cpt-id`;
+
+	return `
+<form id="kb-adv-form-${ uniqueId }" class="kb-advanced-form" method="post" data-form="${ formId }">
 	<div class="kb-adv-form-field">
-		<label for="field1">Message</label>
-		<input id="field1" name="field1" type="text">
+		<label for="field-${ formId }">Message</label>
+		<input id="field-${ formId }" name="field${ formId }" type="text">
 	</div>
 	<div class="kb-adv-form-field kb-submit-field">
 		<button class="kb-adv-form-submit-button" type="submit">Send</button>
 	</div>
-	<input type="hidden" name="_kb_adv_form_post_id" value="42">
+	<input type="hidden" name="_kb_adv_form_post_id" value="${ formId }">
 	<input type="hidden" name="action" value="kb_process_advanced_form_submit">
-	<input type="hidden" name="_kb_adv_form_id" value="42-cpt-id">
+	<input type="hidden" name="_kb_adv_form_id" value="${ uniqueId }">
 </form>`;
+}
 
 /**
  * Build a page.
  *
- * @param {object} options
- * @param {string} options.display    'invisible' (default) or 'standard'.
- * @param {string} options.state      Initial widget state.
- * @param {object} options.data       Overrides for window.kwfaWidgetData.
- * @param {boolean} options.loadGlue  Load the glue script. Default true.
- * @param {boolean} options.widget    Insert a widget at all. Default true.
+ * @param {object}   options
+ * @param {string}   options.display   'invisible' (default) or 'standard'.
+ * @param {string}   options.state     Initial widget state.
+ * @param {object}   options.data      Overrides for window.kwfaWidgetData.
+ * @param {boolean}  options.loadGlue  Load the glue script. Default true.
+ * @param {boolean}  options.widget    Insert a widget at all. Default true.
+ * @param {Array}    options.formIds   Form CPT ids to render. Default [42].
  */
 async function setup( options ) {
 	const opts = Object.assign(
@@ -58,12 +74,13 @@ async function setup( options ) {
 			state: 'unverified',
 			data: {},
 			loadGlue: true,
-			widget: true
+			widget: true,
+			formIds: [ 42 ]
 		},
 		options || {}
 	);
 
-	const dom = new JSDOM( `<!doctype html><html><body>${ FORM_HTML }</body></html>`, {
+	const dom = new JSDOM( '<!doctype html><html><body></body></html>', {
 		runScripts: 'dangerously',
 		pretendToBeVisual: true,
 		url: 'https://example.test/contact/'
@@ -71,7 +88,73 @@ async function setup( options ) {
 
 	const window = dom.window;
 	const document = window.document;
-	const form = document.querySelector( 'form' );
+
+	const ctx = { dom, window, document, forms: [], byFormId: {} };
+
+	opts.formIds.forEach( ( formId ) => {
+		const entry = insertForm( ctx, formId, opts );
+		ctx.forms.push( entry );
+		ctx.byFormId[ formId ] = entry;
+	} );
+
+	// Convenience aliases for the single-form tests.
+	const first = ctx.forms[ 0 ];
+	if ( first ) {
+		ctx.form = first.form;
+		ctx.button = first.button;
+		ctx.widget = first.widget;
+		ctx.kadence = first.kadence;
+	}
+
+	window.kwfaWidgetData = Object.assign(
+		{
+			language: 'de',
+			strings: { label: 'Ich bin kein Roboter' },
+			waitTimeout: 300,
+			noticeDelay: 50,
+			ui: { waiting: 'Einen Moment …' }
+		},
+		opts.data
+	);
+
+	/**
+	 * Add a form to the page after the fact, the way Kadence Pro's Query block
+	 * does when it replaces a result region's innerHTML.
+	 */
+	ctx.injectForm = function ( formId, injectOptions ) {
+		const entry = insertForm( ctx, formId, Object.assign( {}, opts, injectOptions || {} ) );
+
+		ctx.forms.push( entry );
+		ctx.byFormId[ formId ] = entry;
+
+		return entry;
+	};
+
+	if ( opts.loadGlue ) {
+		window.eval( GLUE_SOURCE );
+
+		// The glue is a footer script, so at this point the document is still
+		// parsing and it has deferred its own boot() to DOMContentLoaded —
+		// exactly as it does on a real page. Wait for that before handing the
+		// page to a test, or the test races the script it is testing.
+		await ready( window );
+	}
+
+	return ctx;
+}
+
+/**
+ * Render one form (plus its widget) into the page.
+ */
+function insertForm( ctx, formId, opts ) {
+	const { window, document } = ctx;
+	const host = document.createElement( 'div' );
+
+	host.innerHTML = formHtml( formId );
+
+	const form = host.querySelector( 'form' );
+	document.body.appendChild( form );
+
 	const button = form.querySelector( 'button[type="submit"]' );
 
 	// Kadence's own submit handler: a bubble-phase listener on the form that
@@ -90,46 +173,38 @@ async function setup( options ) {
 	if ( opts.widget ) {
 		widget = createWidget( window, opts.display, opts.state );
 		form.insertBefore( widget, form.querySelector( '.kb-submit-field' ) );
+
+		// The real widget registers this in onMount (Widget.svelte:355, handler
+		// at :796), so Kadence's clearForm() — which is only form.reset() —
+		// resets it. Tests that model the full success sequence depend on it.
+		form.addEventListener( 'reset', function () {
+			widget.reset();
+		} );
 	}
 
-	window.kwfaWidgetData = Object.assign(
-		{
-			language: 'de',
-			strings: { label: 'Ich bin kein Roboter' },
-			waitTimeout: 300,
-			noticeDelay: 50,
-			ui: { waiting: 'Einen Moment …' }
-		},
-		opts.data
-	);
-
-	if ( opts.loadGlue ) {
-		window.eval( fs.readFileSync( GLUE, 'utf8' ) );
-
-		// The glue is a footer script, so at this point the document is still
-		// parsing and it has deferred its own boot() to DOMContentLoaded —
-		// exactly as it does on a real page. Wait for that before handing the
-		// page to a test, or the test races the script it is testing.
-		await ready( window );
-	}
-
-	return { dom, window, document, form, button, widget, kadence };
+	return { formId, form, button, widget, kadence };
 }
 
 /**
- * Resolve once the page has finished loading and boot() has run.
+ * Dispatch the event Kadence fires after a successful submission.
+ *
+ * Verbatim shape from docs/Kadence/kadence-blocks/includes/assets/js/
+ * kb-advanced-form-block.min.js: dispatched on document.body, with
+ * detail.uniqueId copied from the form's `_kb_adv_form_id` input, or the empty
+ * string when that input is missing.
+ *
+ * @param {object} ctx
+ * @param {string|null} uniqueId Pass null for the empty-string case.
  */
-function ready( window ) {
-	return new Promise( function ( resolve ) {
-		if ( 'loading' === window.document.readyState ) {
-			window.document.addEventListener( 'DOMContentLoaded', function () {
-				setTimeout( resolve, 0 );
-			}, { once: true } );
-			return;
-		}
-
-		setTimeout( resolve, 0 );
-	} );
+function dispatchSuccess( ctx, uniqueId ) {
+	ctx.document.body.dispatchEvent(
+		new ctx.window.CustomEvent( 'kb-advanced-form-success', {
+			detail: {
+				uniqueId: null === uniqueId ? '' : uniqueId,
+				submissionResults: { success: true }
+			}
+		} )
+	);
 }
 
 /**
@@ -230,9 +305,29 @@ function createWidget( window, display, state ) {
 		el.setState( 'unverified' );
 	};
 
+	el.kwfaPayload = function () {
+		return hidden.value;
+	};
+
 	syncRequired();
 
 	return el;
+}
+
+/**
+ * Resolve once the page has finished loading and boot() has run.
+ */
+function ready( window ) {
+	return new Promise( function ( resolve ) {
+		if ( 'loading' === window.document.readyState ) {
+			window.document.addEventListener( 'DOMContentLoaded', function () {
+				setTimeout( resolve, 0 );
+			}, { once: true } );
+			return;
+		}
+
+		setTimeout( resolve, 0 );
+	} );
 }
 
 /**
@@ -245,10 +340,12 @@ function tick( ms ) {
 }
 
 /**
- * Click the submit button the way a visitor would.
+ * Click a form's submit button the way a visitor would.
+ *
+ * Accepts either the whole context (first form) or one form entry.
  */
-function click( ctx ) {
-	ctx.button.click();
+function click( target ) {
+	( target.button || target.forms[ 0 ].button ).click();
 }
 
-module.exports = { setup, tick, click };
+module.exports = { setup, tick, click, dispatchSuccess };

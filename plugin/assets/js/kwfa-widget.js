@@ -109,6 +109,27 @@
 	}
 
 	/**
+	 * Every Kadence Advanced Form on the page.
+	 */
+	function forms() {
+		return document.querySelectorAll( 'form.kb-advanced-form' );
+	}
+
+	/**
+	 * The payload the widget is currently carrying, if any.
+	 */
+	function payloadOf( widget ) {
+		if ( ! widget ) {
+			return '';
+		}
+
+		var name = widget.getAttribute( 'name' ) || 'kwfa_altcha';
+		var field = widget.querySelector( 'input[name="' + name + '"]' ) || widget.querySelector( 'input[type="hidden"]' );
+
+		return field ? field.value : '';
+	}
+
+	/**
 	 * Current widget state: unverified | verifying | verified | error | expired.
 	 */
 	function stateOf( widget ) {
@@ -443,6 +464,9 @@
 		// Capture, so this runs before Kadence's own submit listener and can
 		// stop the request from starting at all.
 		form.addEventListener( 'submit', onSubmit, true );
+
+		// Bubble, so it only runs for submissions that were actually let out.
+		form.addEventListener( 'submit', onSubmitted );
 	}
 
 	/**
@@ -489,29 +513,206 @@
 	}
 
 	/**
+	 * Forms whose `_kb_adv_form_id` matches the one the success event carried.
+	 *
+	 * Kadence builds the event detail from that hidden input:
+	 *
+	 *   uniqueId: b.querySelector('input[name="_kb_adv_form_id"]')
+	 *               ? b.querySelector('input[name="_kb_adv_form_id"]').value : ""
+	 *
+	 * and the input's value is `{form CPT post id}-cpt-id`. So it identifies the
+	 * form *post*, not the rendered instance: the same form embedded twice on a
+	 * page produces two identical values. Hence the caller's fallback.
+	 */
+	function formsWithId( uniqueId ) {
+		var all = forms();
+		var matched = [];
+		var index;
+
+		for ( index = 0; index < all.length; index++ ) {
+			var field = all[ index ].querySelector( 'input[name="_kb_adv_form_id"]' );
+
+			if ( field && field.value === uniqueId && widgetIn( all[ index ] ) ) {
+				matched.push( all[ index ] );
+			}
+		}
+
+		return matched;
+	}
+
+	/**
+	 * Forms still holding a payload we watched them submit.
+	 *
+	 * A solution is single-use, so once it has been submitted the widget holding
+	 * it is spent and must be re-armed. A form nobody touched is not.
+	 */
+	function spentForms() {
+		var all = forms();
+		var spent = [];
+		var index;
+
+		for ( index = 0; index < all.length; index++ ) {
+			var form = all[ index ];
+			var widget = widgetIn( form );
+
+			if ( ! widget || ! form.kwfaSubmittedPayload ) {
+				continue;
+			}
+
+			if ( payloadOf( widget ) === form.kwfaSubmittedPayload ) {
+				spent.push( form );
+			}
+		}
+
+		return spent;
+	}
+
+	/**
+	 * Which forms a success event should re-arm.
+	 */
+	function targetsForSuccess( detail ) {
+		var uniqueId = ( detail && detail.uniqueId ) ? String( detail.uniqueId ) : '';
+		var byId = uniqueId ? formsWithId( uniqueId ) : [];
+
+		if ( 1 === byId.length ) {
+			return byId;
+		}
+
+		var spent = spentForms();
+
+		if ( byId.length > 1 ) {
+			// The same form post rendered more than once. Narrow by what we
+			// actually watched go out; if that tells us nothing, re-arm the
+			// ambiguous set rather than every form on the page.
+			var both = [];
+			var index;
+
+			for ( index = 0; index < byId.length; index++ ) {
+				if ( -1 !== spent.indexOf( byId[ index ] ) ) {
+					both.push( byId[ index ] );
+				}
+			}
+
+			return both.length ? both : byId;
+		}
+
+		return spent;
+	}
+
+	/**
+	 * Record what a form sent, so we know later whether it is spent.
+	 *
+	 * Bubble phase on purpose: if the capture handler held the submission back
+	 * with stopImmediatePropagation() this never runs, which is exactly right —
+	 * nothing was sent.
+	 */
+	function onSubmitted( event ) {
+		var form = event.currentTarget;
+
+		form.kwfaSubmittedPayload = payloadOf( widgetIn( form ) );
+	}
+
+	/**
 	 * Kadence dispatches this on document.body after a successful submission,
 	 * synchronously *before* it calls clearForm() — which is only form.reset().
 	 *
 	 * A solution is single-use, so without a re-arm the second submission from
-	 * the same page would post a spent payload and be rejected. The work is
-	 * deferred by a tick so it happens after Kadence's form.reset(), which the
-	 * widget also listens to and which would otherwise abort a fresh run.
+	 * the same page would post a spent payload and be rejected. But only the
+	 * form that actually submitted may be re-armed: re-arming every widget on
+	 * the page would fire one challenge request per form, and on a page with
+	 * several forms the surplus requests run into our own rate limiter. The
+	 * widgets that lose then sit in an error state, and a visitor submitting
+	 * one of those forms — which they never touched during the first
+	 * submission — is turned away for having no solution.
+	 *
+	 * The work is deferred by a tick so it happens after Kadence's form.reset(),
+	 * which the widget also listens to and which would otherwise abort a fresh
+	 * run.
 	 */
-	function onKadenceSuccess() {
+	function onKadenceSuccess( event ) {
+		var targets = targetsForSuccess( event ? event.detail : null );
+
 		window.setTimeout( function () {
-			var found = widgets();
 			var index;
 
-			for ( index = 0; index < found.length; index++ ) {
-				rearm( found[ index ] );
-				arm( found[ index ] );
+			for ( index = 0; index < targets.length; index++ ) {
+				var form = targets[ index ];
+				var widget = widgetIn( form );
+
+				form.kwfaSubmittedPayload = null;
+
+				if ( widget ) {
+					rearm( widget );
+					arm( widget );
+				}
 			}
 		}, 0 );
+	}
+
+	/**
+	 * Re-scan when forms arrive after page load.
+	 *
+	 * Kadence Pro's Query block replaces whole result regions with fetched
+	 * markup (`replaceHtml()` in its query.js assigns `innerHTML`), so a form
+	 * inside one is a different element from the one we bound at load. Without
+	 * this it would get no `required` observer and no submit deferral: on an
+	 * invisible widget that means a submit button that silently does nothing.
+	 *
+	 * scan() is idempotent — every element it touches is marked — so the only
+	 * thing to be careful about is cost. These pages are ordinary pages, and
+	 * this observer sees every DOM mutation on them, so it filters to added
+	 * element nodes first and then debounces.
+	 */
+	var watching = false;
+
+	function watchForNewForms() {
+		// boot() runs on both DOMContentLoaded and load; observe once.
+		if ( watching || ! window.MutationObserver ) {
+			return;
+		}
+
+		var root = document.documentElement || document.body;
+
+		if ( ! root ) {
+			return;
+		}
+
+		watching = true;
+
+		var scheduled = false;
+
+		var observer = new window.MutationObserver( function ( records ) {
+			if ( scheduled ) {
+				return;
+			}
+
+			var index;
+			var child;
+
+			for ( index = 0; index < records.length; index++ ) {
+				var added = records[ index ].addedNodes;
+
+				for ( child = 0; child < added.length; child++ ) {
+					if ( 1 === added[ child ].nodeType ) {
+						scheduled = true;
+						window.setTimeout( function () {
+							scheduled = false;
+							scan();
+						}, 100 );
+
+						return;
+					}
+				}
+			}
+		} );
+
+		observer.observe( root, { childList: true, subtree: true } );
 	}
 
 	function boot() {
 		registerStrings();
 		scan();
+		watchForNewForms();
 	}
 
 	if ( document.body ) {

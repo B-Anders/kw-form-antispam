@@ -83,7 +83,7 @@ test( 'required stays off when the widget re-applies it', async () => {
 test( 'other required fields in the form are left alone', async () => {
 	const ctx = await setup( { display: 'invisible', state: 'unverified' } );
 
-	const field = ctx.document.getElementById( 'field1' );
+	const field = ctx.document.getElementById( 'field-42' );
 	field.required = true;
 
 	await tick( 20 );
