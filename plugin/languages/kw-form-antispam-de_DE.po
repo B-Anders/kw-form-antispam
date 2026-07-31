@@ -2,7 +2,94 @@
 # Copyright (C) 2026 Kreiswolke
 # This file is distributed under the GPL-2.0-or-later license.
 msgid ""
-msgstr "Project-Id-Version: KW Form Antispam 0.2.1\nReport-Msgid-Bugs-To: https://wordpress.org/support/plugin/kw-form-antispam\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPO-Revision-Date: 2026-07-31 18:02+0000\nLanguage: de_DE\nPlural-Forms: nplurals=2; plural=(n != 1);\nX-Domain: kw-form-antispam\n"
+msgstr "Project-Id-Version: KW Form Antispam 0.3.0\nReport-Msgid-Bugs-To: https://wordpress.org/support/plugin/kw-form-antispam\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPO-Revision-Date: 2026-07-31 18:38+0000\nLanguage: de_DE\nPlural-Forms: nplurals=2; plural=(n != 1);\nX-Domain: kw-form-antispam\n"
+
+msgid "A solved challenge could be submitted more than once until it expires. Everything else still works. Check for a KW Form Antispam update."
+msgstr "Eine gelöste Aufgabe könnte bis zu ihrem Ablauf mehrfach eingereicht werden. Alles Übrige funktioniert weiterhin. Bitte prüfen Sie, ob ein Update von KW Form Antispam vorliegt."
+
+msgid "Activity in the current window"
+msgstr "Aktivität im aktuellen Zeitfenster"
+
+msgid "Form spam protection"
+msgstr "Spamschutz für Formulare"
+
+msgid "Form spam protection has stopped working"
+msgstr "Der Spamschutz für Formulare funktioniert nicht mehr"
+
+msgid "Form spam protection is working"
+msgstr "Der Spamschutz für Formulare funktioniert"
+
+msgid "Form spam protection needs a look"
+msgstr "Der Spamschutz für Formulare sollte geprüft werden"
+
+msgid "Integration warnings"
+msgstr "Warnungen zur Kadence-Anbindung"
+
+msgid "KW Form Antispam"
+msgstr "KW Form Antispam"
+
+msgid "KW Form Antispam is verifying submissions on your Kadence Advanced Forms."
+msgstr "KW Form Antispam prüft die Einsendungen Ihrer Kadence Advanced Forms."
+
+msgid "KW Form Antispam: spam protection has stopped working."
+msgstr "KW Form Antispam: Der Spamschutz funktioniert nicht mehr."
+
+msgid "Kadence Blocks Pro has been updated since this plugin was last verified against it."
+msgstr "Kadence Blocks Pro wurde aktualisiert, seit dieses Plugin zuletzt dagegen geprüft wurde."
+
+msgid "Kadence Blocks has been updated since this plugin was last verified against it."
+msgstr "Kadence Blocks wurde aktualisiert, seit dieses Plugin zuletzt dagegen geprüft wurde."
+
+msgid "Kadence Blocks version"
+msgstr "Kadence-Blocks-Version"
+
+msgid "Kadence is accepting submissions without signalling completion, so solved challenges are not being marked as used."
+msgstr "Kadence nimmt Einsendungen an, ohne den Abschluss zu melden. Gelöste Aufgaben werden daher nicht als verbraucht markiert."
+
+msgid "Kadence no longer registers the form submission handler this plugin attaches to."
+msgstr "Kadence registriert die Formularverarbeitung, an die sich dieses Plugin anhängt, nicht mehr."
+
+msgid "None"
+msgstr "Keine"
+
+msgid "Not active"
+msgstr "Nicht aktiv"
+
+msgid "Protection warnings"
+msgstr "Warnungen zum Spamschutz"
+
+msgid "Security"
+msgstr "Sicherheit"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Submissions are reaching the plugin, but Kadence never finishes processing any of them."
+msgstr "Einsendungen erreichen das Plugin, aber Kadence schließt keine davon ab."
+
+msgid "Submissions are reaching the plugin, but Kadence never runs the validation step this plugin relies on."
+msgstr "Einsendungen erreichen das Plugin, aber Kadence führt den Prüfschritt, auf den sich dieses Plugin stützt, nicht mehr aus."
+
+msgid "The early check is still working, but the backup check is not. Protection is reduced rather than off. Check for a KW Form Antispam update."
+msgstr "Die frühe Prüfung funktioniert noch, die zweite Absicherung nicht. Der Schutz ist eingeschränkt, aber nicht aus. Bitte prüfen Sie, ob ein Update von KW Form Antispam vorliegt."
+
+msgid "The early check still runs, but everything after it is silent — most likely a Kadence Blocks update changed the submission pipeline. Check for a KW Form Antispam update."
+msgstr "Die frühe Prüfung läuft noch, alles danach bleibt still – vermutlich hat ein Update von Kadence Blocks den Ablauf der Formularverarbeitung geändert. Bitte prüfen Sie, ob ein Update von KW Form Antispam vorliegt."
+
+msgid "This is normal and usually harmless — it is a prompt to test a form submission, not a fault."
+msgstr "Das ist normal und in der Regel harmlos – es ist ein Hinweis, eine Formulareinsendung zu testen, kein Fehler."
+
+msgid "This usually means a Kadence Blocks update changed how forms are submitted. Spam protection is off until the plugin is updated to match. Check for a KW Form Antispam update."
+msgstr "Das bedeutet meist, dass ein Update von Kadence Blocks die Formularübermittlung geändert hat. Der Spamschutz ist aus, bis das Plugin daran angepasst wurde. Bitte prüfen Sie, ob ein Update von KW Form Antispam vorliegt."
+
+msgid "Verification challenges are being issued, but no form submission has reached the plugin."
+msgstr "Es werden Prüfaufgaben ausgegeben, aber keine Formulareinsendung erreicht das Plugin."
+
+msgid "Verified against"
+msgstr "Geprüft gegen"
+
+msgid "Visitors are using your forms, but submissions are bypassing the spam check — most likely because a Kadence Blocks update moved the submission handler. Check for a KW Form Antispam update."
+msgstr "Besucher nutzen Ihre Formulare, aber die Einsendungen umgehen die Spamprüfung – vermutlich hat ein Update von Kadence Blocks die Formularverarbeitung verschoben. Bitte prüfen Sie, ob ein Update von KW Form Antispam vorliegt."
 
 msgid "A challenge could not be generated on the last request."
 msgstr "Bei der letzten Anfrage konnte keine Aufgabe erzeugt werden."

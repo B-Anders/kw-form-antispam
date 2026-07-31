@@ -18,6 +18,7 @@
 define( 'MINUTE_IN_SECONDS', 60 );
 define( 'HOUR_IN_SECONDS', 60 * MINUTE_IN_SECONDS );
 define( 'DAY_IN_SECONDS', 24 * HOUR_IN_SECONDS );
+define( 'WEEK_IN_SECONDS', 7 * DAY_IN_SECONDS );
 
 // -----------------------------------------------------------------------------
 // Hooks
@@ -189,6 +190,10 @@ function add_option( $name, $value, $deprecated = '', $autoload = 'yes' ) {
  * @return bool
  */
 function update_option( $name, $value, $autoload = null ) {
+	if ( WP_Stub_State::$options_throw ) {
+		throw new \RuntimeException( 'options table unavailable' );
+	}
+
 	$existing = array_key_exists( $name, WP_Stub_State::$options ) ? WP_Stub_State::$options[ $name ] : null;
 
 	WP_Stub_State::$options[ $name ] = $value;

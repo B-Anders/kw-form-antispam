@@ -3,7 +3,7 @@
  * Plugin Name:       KW Form Antispam
  * Plugin URI:        https://kreiswolke.com/kw-form-antispam/
  * Description:       Proof-of-work spam protection for Kadence Advanced Form blocks. Challenges are issued and verified by your own server: no third-party service, no outbound requests, no cookies, no personal data.
- * Version:           0.2.1
+ * Version:           0.3.0
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Author:            Kreiswolke
@@ -26,7 +26,7 @@ if ( defined( 'KWFA_VERSION' ) ) {
 	return;
 }
 
-define( 'KWFA_VERSION', '0.2.1' );
+define( 'KWFA_VERSION', '0.3.0' );
 define( 'KWFA_PLUGIN_FILE', __FILE__ );
 define( 'KWFA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KWFA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -130,3 +130,37 @@ function kwfa_bootstrap() {
 	\Kreiswolke\FormAntispam\Plugin::init();
 }
 add_action( 'plugins_loaded', 'kwfa_bootstrap' );
+
+/**
+ * The plugin's monitoring contract. Stable public API — see readme.txt.
+ *
+ * Returns an array describing whether spam protection is actually working:
+ *
+ *   status      'ok' | 'review' | 'drift'
+ *   drift       string[]  integration has stopped firing; fix by updating this plugin
+ *   review      string[]  worth a look; not a fault on its own
+ *   protection  string    this site's own machinery is degraded ('' when fine)
+ *   counters    int[]     activity totals for the current measurement window
+ *   window      array     when the window started, and how long it runs
+ *   last_seen   int[]     unix timestamps per event, 0 for never
+ *   kadence     array     versions running, versions verified against
+ *   plugin      string    this plugin's version
+ *
+ * Counters and timestamps only. Nothing here describes a visitor.
+ *
+ * Intended for fleet monitoring, e.g.
+ *   wp eval 'echo json_encode( kwfa_health_report() );'
+ *
+ * @since 0.3.0
+ * @return array
+ */
+function kwfa_health_report() {
+	if ( ! class_exists( '\\Kreiswolke\\FormAntispam\\Probe' ) ) {
+		return array(
+			'schema' => 0,
+			'status' => 'unavailable',
+		);
+	}
+
+	return \Kreiswolke\FormAntispam\Probe::report();
+}

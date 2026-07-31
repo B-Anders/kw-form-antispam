@@ -97,15 +97,26 @@ final class Gate {
 	 * @return void
 	 */
 	public static function on_submission_accepted( $buffer = null, $is_error = false ) {
-		if ( $is_error || self::$spent || null === self::$decision ) {
+		if ( null === self::$decision ) {
 			return;
 		}
 
-		if ( ! self::$decision['pass'] || '' === self::$decision['replay_key'] ) {
+		// Kadence's own handler finished a submission we saw — whether it
+		// accepted or rejected it. This is what tells the drift probe that the
+		// pipeline downstream of us is alive at all.
+		Probe::record( 'reached' );
+
+		if ( $is_error || self::$spent ) {
 			return;
 		}
 
 		self::$spent = true;
+
+		Probe::record( 'accepted' );
+
+		if ( ! self::$decision['pass'] || '' === self::$decision['replay_key'] ) {
+			return;
+		}
 
 		if ( ! Replay::spend( self::$decision['replay_key'], self::$decision['replay_ttl'] ) ) {
 			// The solution was valid; only single-use enforcement is degraded.
@@ -125,6 +136,8 @@ final class Gate {
 			return;
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
+		Probe::record( 'a' );
 
 		$decision = self::decide();
 
@@ -149,6 +162,8 @@ final class Gate {
 	 * @return bool
 	 */
 	public static function checkpoint_b( $rejected, $form_args = array(), $processed_fields = array(), $post_id = '' ) {
+		Probe::record( 'b' );
+
 		if ( $rejected ) {
 			// Somebody else already rejected. Leave their message alone.
 			return $rejected;
@@ -204,6 +219,8 @@ final class Gate {
 		// second verification and therefore cannot spend the solution twice.
 		self::$decision = self::allow( 'in_progress' );
 		self::$decision = self::evaluate();
+
+		Probe::record( self::$decision['pass'] ? 'pass' : 'reject' );
 
 		return self::$decision;
 	}

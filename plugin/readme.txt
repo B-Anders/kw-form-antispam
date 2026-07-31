@@ -4,7 +4,7 @@ Tags: spam, antispam, captcha, kadence, altcha, proof-of-work
 Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.1
+Stable tag: 0.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,43 @@ distinct.
 Nothing needs configuring. If a translation plugin is active but cannot map a
 form to its original, the submission is accepted rather than rejected and a
 notice appears in the dashboard explaining what to check.
+
+= Knowing it is still working =
+
+This plugin hooks into Kadence's form handling. If a future Kadence update
+moves that handling, protection would stop without anything visibly breaking —
+forms would keep working, and nothing would look wrong. On a network of sites
+running the same Kadence version, that could happen everywhere at once.
+
+So the plugin watches itself. It compares its own challenge endpoint — which
+works regardless of Kadence — against whether its checks are still running. If
+visitors are using your forms but the checks have gone quiet, you get a clear
+notice and a failed test in **Tools → Site Health**, saying which part stopped
+and what to do about it. Problems with this site's own setup are reported
+separately from Kadence changes, because they are fixed in different places.
+
+Only counters and timestamps are recorded. Nothing about a visitor.
+
+= Monitoring several sites =
+
+`kwfa_health_report()` returns the same status as an array, for anyone
+maintaining more than one site:
+
+`wp eval 'echo json_encode( kwfa_health_report() );'`
+
+The important keys:
+
+* `status` — `ok`, `review` or `drift`. `drift` means protection has stopped.
+* `drift` — which integration point stopped firing. Fixed by updating this plugin.
+* `protection` — a problem with this site's own setup. Fixed on this site.
+* `review` — worth a look, not a fault on its own (for example, Kadence updated).
+* `counters` — activity totals for the current measurement window.
+* `kadence` — the Kadence versions running, and the ones this plugin is verified against.
+
+This is treated as a stable interface and will not change shape without a
+version bump of the `schema` key. The report is also included in
+**Tools → Site Health → Info**, and can be extended through the
+`kwfa_health_report` filter.
 
 = Rate limiting =
 
@@ -169,9 +206,12 @@ complain about.
   key changes every window, so nothing links two visits together, and the raw
   address is never written to the database, to a log, or anywhere else.
 * **What is stored.** One option holding the site's signing secret, one small
-  option recording whether protection is currently degraded, and short-lived
-  transients for rate limiting and single-use enforcement. Uninstalling removes
-  all of them.
+  option recording whether protection is currently degraded, one small option
+  holding the self-monitoring counters, and short-lived transients for rate
+  limiting and single-use enforcement. Uninstalling removes all of them.
+* **The self-monitoring counters are counts and timestamps only** — how many
+  challenges were issued, how many submissions were checked, when each last
+  happened. No addresses, no submission contents, nothing identifying anyone.
 
 == Third-party assets and trademarks ==
 
@@ -189,6 +229,17 @@ owner; this project is likewise independent of it. Both names are used here only
 to describe what this plugin is compatible with.
 
 == Changelog ==
+
+= 0.3.0 =
+* New: the plugin now notices if a Kadence update moves the form handling it
+  depends on. Previously that would have switched protection off silently.
+  Reported as an admin notice, a Site Health test, and through a documented
+  `kwfa_health_report()` function for anyone monitoring several sites.
+* Problems caused by a Kadence change are now described separately from
+  problems with this site's own setup, since the two are fixed in different
+  places.
+* Only counters and timestamps are recorded, written once per relevant request
+  rather than on every page load.
 
 = 0.2.1 =
 * Fixed: on WPML or Polylang sites, every submission from a translated page was
@@ -219,6 +270,10 @@ to describe what this plugin is compatible with.
   fail-open behaviour with admin reporting.
 
 == Upgrade Notice ==
+
+= 0.3.0 =
+Adds self-monitoring so a future Kadence update cannot switch spam protection
+off without telling you.
 
 = 0.2.1 =
 Important fix for multilingual sites: submissions from translated pages were

@@ -166,6 +166,11 @@ final class Rest_Challenge {
 			Status::clear();
 		}
 
+		// The heartbeat the drift probe depends on: a challenge is only ever
+		// issued because a real visitor touched a real form, and this endpoint
+		// is ours, so it keeps working whatever Kadence does.
+		Probe::record( 'challenges' );
+
 		$response = new \WP_REST_Response( $challenge, 200 );
 
 		return self::no_cache( $response );

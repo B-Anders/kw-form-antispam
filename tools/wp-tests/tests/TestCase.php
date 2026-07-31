@@ -34,6 +34,10 @@ abstract class TestCase extends PHPUnitTestCase {
 			'reported' => false,
 		),
 		'Kreiswolke\\FormAntispam\\Frontend' => array( 'enqueued' => false ),
+		'Kreiswolke\\FormAntispam\\Probe'    => array(
+			'pending'      => array(),
+			'flush_hooked' => false,
+		),
 		'Kreiswolke\\FormAntispam\\Gate'     => array(
 			'decision'       => null,
 			'rejected_by_us' => false,
@@ -119,6 +123,21 @@ abstract class TestCase extends PHPUnitTestCase {
 	}
 
 	/**
+	 * Read a private static property.
+	 *
+	 * @param string $class_name Class name.
+	 * @param string $property   Property name.
+	 * @return mixed
+	 */
+	protected function get_static( $class_name, $property ) {
+		$reflection = new ReflectionClass( $class_name );
+		$prop       = $reflection->getProperty( $property );
+		$prop->setAccessible( true );
+
+		return $prop->getValue();
+	}
+
+	/**
 	 * Call a private static method.
 	 *
 	 * @param string $class_name Class name.
@@ -188,6 +207,10 @@ abstract class TestCase extends PHPUnitTestCase {
 		try {
 			do_action( 'wp_ajax_nopriv_kb_process_advanced_form_submit' );
 		} catch ( WP_Json_Exit $exit ) {
+			// wp_send_json_error() ends in wp_die(), and WordPress runs the
+			// shutdown hooks after that, so the request still finishes.
+			$this->end_request();
+
 			return array(
 				'result'  => 'rejected_at_checkpoint_a',
 				'message' => isset( $exit->payload['message'] ) ? $exit->payload['message'] : '',
@@ -204,6 +227,7 @@ abstract class TestCase extends PHPUnitTestCase {
 		if ( 'field_error' === $outcome ) {
 			// process_fields() bailed. The reject filter is never reached.
 			do_action( 'kadence_blocks_forms_buffer_flushed', null, true );
+			$this->end_request();
 
 			return array(
 				'result'  => 'kadence_field_error',
@@ -230,6 +254,7 @@ abstract class TestCase extends PHPUnitTestCase {
 			);
 
 			do_action( 'kadence_blocks_forms_buffer_flushed', null, true );
+			$this->end_request();
 
 			return array(
 				'result'  => 'rejected_at_checkpoint_b',
@@ -239,12 +264,27 @@ abstract class TestCase extends PHPUnitTestCase {
 		}
 
 		do_action( 'kadence_blocks_forms_buffer_flushed', null, false );
+		$this->end_request();
 
 		return array(
 			'result'  => 'accepted',
 			'message' => '',
 			'payload' => array(),
 		);
+	}
+
+	/**
+	 * Finish a request: run the shutdown hooks, as WordPress does.
+	 *
+	 * The drift probe accumulates in memory and writes once here, so without
+	 * this nothing it counts would ever reach storage.
+	 *
+	 * @return void
+	 */
+	protected function end_request() {
+		do_action( 'shutdown' );
+
+		$this->set_static( 'Kreiswolke\FormAntispam\Probe', 'flush_hooked', false );
 	}
 
 	/**

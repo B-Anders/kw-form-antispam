@@ -2,24 +2,32 @@
 # This file is distributed under the GPL-2.0-or-later license.
 msgid ""
 msgstr ""
-"Project-Id-Version: KW Form Antispam 0.2.1\n"
+"Project-Id-Version: KW Form Antispam 0.3.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/kw-form-antispam\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-31T18:02:11+00:00\n"
+"POT-Creation-Date: 2026-07-31T18:37:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: kw-form-antispam\n"
 
-#: includes/class-status.php:160
+#: includes/class-status.php:172
 msgid "A challenge could not be generated on the last request."
 msgstr ""
 
-#: includes/class-status.php:162
+#: includes/class-probe.php:310
+msgid "A solved challenge could be submitted more than once until it expires. Everything else still works. Check for a KW Form Antispam update."
+msgstr ""
+
+#: includes/class-status.php:174
 msgid "A translation plugin is active but could not map a form to its original, so the per-form check was skipped for a submission. Check that your Kadence forms are set to translatable."
+msgstr ""
+
+#: includes/class-health.php:152
+msgid "Activity in the current window"
 msgstr ""
 
 #: includes/class-frontend.php:347
@@ -35,9 +43,29 @@ msgstr ""
 msgid "Enter the code you hear. Press Space to play the audio."
 msgstr ""
 
+#: includes/class-health.php:56
+msgid "Form spam protection"
+msgstr ""
+
+#: includes/class-health.php:88
+msgid "Form spam protection has stopped working"
+msgstr ""
+
+#: includes/class-health.php:72
+msgid "Form spam protection is working"
+msgstr ""
+
+#: includes/class-health.php:97
+msgid "Form spam protection needs a look"
+msgstr ""
+
 #. translators: Label next to the verification checkbox shown above the form's submit button.
 #: includes/class-frontend.php:357
 msgid "I am not a robot"
+msgstr ""
+
+#: includes/class-health.php:144
+msgid "Integration warnings"
 msgstr ""
 
 #. translators: Shown next to the submit button when a visitor submits before the background check has finished. The submission is sent automatically once it has.
@@ -45,17 +73,62 @@ msgstr ""
 msgid "Just a moment — finishing the spam check, then sending your message."
 msgstr ""
 
+#: includes/class-health.php:137
+msgid "KW Form Antispam"
+msgstr ""
+
+#: includes/class-health.php:78
+msgid "KW Form Antispam is verifying submissions on your Kadence Advanced Forms."
+msgstr ""
+
+#: includes/class-health.php:200
+msgid "KW Form Antispam: spam protection has stopped working."
+msgstr ""
+
 #. translators: %s: the specific reason protection is unavailable.
 #: includes/class-status.php:135
 msgid "KW Form Antispam: spam protection is currently OFF. %s Form submissions are still being accepted — the plugin never blocks a form because of its own failure."
 msgstr ""
 
-#: includes/class-status.php:156
+#: includes/class-probe.php:317
+msgid "Kadence Blocks Pro has been updated since this plugin was last verified against it."
+msgstr ""
+
+#: includes/class-probe.php:313
+msgid "Kadence Blocks has been updated since this plugin was last verified against it."
+msgstr ""
+
+#: includes/class-status.php:168
 msgid "Kadence Blocks is not active, so there are no Advanced Forms to protect."
+msgstr ""
+
+#: includes/class-health.php:157
+msgid "Kadence Blocks version"
+msgstr ""
+
+#: includes/class-probe.php:309
+msgid "Kadence is accepting submissions without signalling completion, so solved challenges are not being marked as used."
+msgstr ""
+
+#: includes/class-probe.php:293
+msgid "Kadence no longer registers the form submission handler this plugin attaches to."
 msgstr ""
 
 #: includes/class-frontend.php:358
 msgid "Loading…"
+msgstr ""
+
+#: includes/class-health.php:145
+#: includes/class-health.php:149
+msgid "None"
+msgstr ""
+
+#: includes/class-health.php:158
+msgid "Not active"
+msgstr ""
+
+#: includes/class-health.php:148
+msgid "Protection warnings"
 msgstr ""
 
 #: includes/class-frontend.php:359
@@ -64,6 +137,10 @@ msgstr ""
 
 #: includes/class-frontend.php:355
 msgid "Request an audio challenge"
+msgstr ""
+
+#: includes/class-health.php:75
+msgid "Security"
 msgstr ""
 
 #: includes/class-frontend.php:346
@@ -77,16 +154,45 @@ msgstr ""
 msgid "Spam protection is temporarily unavailable."
 msgstr ""
 
-#: includes/class-status.php:158
+#: includes/class-health.php:140
+msgid "Status"
+msgstr ""
+
+#: includes/class-probe.php:301
+msgid "Submissions are reaching the plugin, but Kadence never finishes processing any of them."
+msgstr ""
+
+#: includes/class-probe.php:305
+msgid "Submissions are reaching the plugin, but Kadence never runs the validation step this plugin relies on."
+msgstr ""
+
+#: includes/class-status.php:170
 msgid "The challenge/verification component of the plugin could not be loaded; reinstall the plugin."
 msgstr ""
 
-#: includes/class-status.php:157
+#: includes/class-probe.php:306
+msgid "The early check is still working, but the backup check is not. Protection is reduced rather than off. Check for a KW Form Antispam update."
+msgstr ""
+
+#: includes/class-probe.php:302
+msgid "The early check still runs, but everything after it is silent — most likely a Kadence Blocks update changed the submission pipeline. Check for a KW Form Antispam update."
+msgstr ""
+
+#: includes/class-status.php:169
 msgid "The signing secret is missing or unreadable; visit any admin page as an administrator to have it regenerated."
 msgstr ""
 
-#: includes/class-status.php:161
+#: includes/class-status.php:173
 msgid "The single-use store (transients) is not writable, so a solved challenge could be reused until it expires."
+msgstr ""
+
+#: includes/class-probe.php:314
+#: includes/class-probe.php:318
+msgid "This is normal and usually harmless — it is a prompt to test a form submission, not a fault."
+msgstr ""
+
+#: includes/class-probe.php:294
+msgid "This usually means a Kadence Blocks update changed how forms are submitted. Spam protection is off until the plugin is updated to match. Check for a KW Form Antispam update."
 msgstr ""
 
 #: includes/class-frontend.php:351
@@ -95,6 +201,10 @@ msgstr ""
 
 #: includes/class-rest-challenge.php:104
 msgid "Too many verification requests. Please wait a moment and try again."
+msgstr ""
+
+#: includes/class-probe.php:297
+msgid "Verification challenges are being issued, but no form submission has reached the plugin."
 msgstr ""
 
 #: includes/class-frontend.php:353
@@ -110,7 +220,7 @@ msgstr ""
 msgid "Verification is still running — please wait a moment."
 msgstr ""
 
-#: includes/class-status.php:159
+#: includes/class-status.php:171
 msgid "Verification raised an unexpected error on the last submission."
 msgstr ""
 
@@ -122,6 +232,10 @@ msgstr ""
 msgid "Verified"
 msgstr ""
 
+#: includes/class-health.php:161
+msgid "Verified against"
+msgstr ""
+
 #: includes/class-frontend.php:360
 msgid "Verify"
 msgstr ""
@@ -130,7 +244,11 @@ msgstr ""
 msgid "Verifying…"
 msgstr ""
 
-#: includes/class-gate.php:389
+#: includes/class-probe.php:298
+msgid "Visitors are using your forms, but submissions are bypassing the spam check — most likely because a Kadence Blocks update moved the submission handler. Check for a KW Form Antispam update."
+msgstr ""
+
+#: includes/class-gate.php:406
 msgid "We could not verify that this submission came from a browser. Please reload the page and try again."
 msgstr ""
 

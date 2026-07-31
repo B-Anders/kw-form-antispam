@@ -1,6 +1,6 @@
 {
   "name": "kw-form-antispam-js-tests",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "description": "Dev-only browser-behaviour tests for the KW Form Antispam glue script. Never shipped.",
   "license": "GPL-2.0-or-later",

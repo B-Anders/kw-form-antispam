@@ -106,6 +106,14 @@ final class WP_Stub_State {
 	public static $transients_readonly = false;
 
 	/**
+	 * When true, update_option() throws. Used to prove that a failure in the
+	 * monitoring probe cannot take a submission down with it.
+	 *
+	 * @var bool
+	 */
+	public static $options_throw = false;
+
+	/**
 	 * Overrides the proof-of-work cost through the kwfa_challenge_cost filter.
 	 *
 	 * Most tests do not care how hard the puzzle is and would rather not spend
@@ -137,6 +145,7 @@ final class WP_Stub_State {
 		self::$is_feed             = false;
 		self::$user_can            = false;
 		self::$transients_readonly = false;
+		self::$options_throw       = false;
 		self::$forced_cost         = null;
 	}
 

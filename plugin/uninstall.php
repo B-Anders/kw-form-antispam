@@ -22,6 +22,7 @@ function kwfa_uninstall_site() {
 
 	delete_option( 'kwfa_hmac_secret' );
 	delete_option( 'kwfa_status' );
+	delete_option( 'kwfa_probe' );
 
 	$prefixes = array( 'kwfa_rl_', 'kwfa_used_' );
 

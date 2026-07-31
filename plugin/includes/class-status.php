@@ -147,6 +147,18 @@ final class Status {
 	}
 
 	/**
+	 * The explanation for a failure code.
+	 *
+	 * @param string $code Failure code.
+	 * @return string Empty string when the code is unknown.
+	 */
+	public static function describe( $code ) {
+		$messages = self::messages();
+
+		return isset( $messages[ $code ] ) ? $messages[ $code ] : '';
+	}
+
+	/**
 	 * Human-readable reason per failure code.
 	 *
 	 * @return array<string,string>

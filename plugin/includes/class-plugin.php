@@ -48,6 +48,8 @@ final class Plugin {
 		}
 
 		Secret::init();
+		Probe::init();
+		Health::init();
 		Rest_Challenge::init();
 		Frontend::init();
 		Gate::init();
