@@ -4,7 +4,7 @@ Tags: spam, antispam, captcha, kadence, altcha, proof-of-work
 Requires at least: 6.6
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,17 @@ spinner.
 
 Prefer the classic "I am not a robot" checkbox? Return true from the
 `kwfa_widget_visible` filter.
+
+= Multilingual sites =
+
+WPML and Polylang are supported. A translated form is recognised as the same
+form as its original, so a visitor can switch language mid-session and their
+verification still counts — while two genuinely different forms remain
+distinct.
+
+Nothing needs configuring. If a translation plugin is active but cannot map a
+form to its original, the submission is accepted rather than rejected and a
+notice appears in the dashboard explaining what to check.
 
 = Rate limiting =
 
@@ -179,6 +190,15 @@ to describe what this plugin is compatible with.
 
 == Changelog ==
 
+= 0.2.1 =
+* Fixed: on WPML or Polylang sites, every submission from a translated page was
+  rejected. The challenge was bound to the original form's ID while the page
+  submitted the translation's, so the two never matched. The form ID is now
+  taken from the block that actually renders the form, and translations of one
+  form are recognised as the same form.
+* Fixed: a warning raised during a submission that then succeeded was cleared
+  by that same submission, so some degraded states never reached the dashboard.
+
 = 0.2.0 =
 * The verification widget is now invisible by default. The check already ran in
   the background, so the checkbox was decoration; removing it also removes an
@@ -199,6 +219,10 @@ to describe what this plugin is compatible with.
   fail-open behaviour with admin reporting.
 
 == Upgrade Notice ==
+
+= 0.2.1 =
+Important fix for multilingual sites: submissions from translated pages were
+being rejected. Update if you use WPML or Polylang.
 
 = 0.2.0 =
 The verification checkbox is now invisible by default, and a submission made

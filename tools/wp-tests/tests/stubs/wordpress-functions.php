@@ -105,6 +105,26 @@ function do_action( $hook, ...$args ) {
 }
 
 /**
+ * Does a hook have any callbacks?
+ *
+ * @param string $hook Hook name.
+ * @return bool
+ */
+function has_filter( $hook ) {
+	return ! empty( WP_Stub_State::$hooks[ $hook ] );
+}
+
+/**
+ * Alias of has_filter(), as in WordPress.
+ *
+ * @param string $hook Hook name.
+ * @return bool
+ */
+function has_action( $hook ) {
+	return has_filter( $hook );
+}
+
+/**
  * Priorities a hook has callbacks registered on.
  *
  * Test-only helper; no WordPress equivalent.

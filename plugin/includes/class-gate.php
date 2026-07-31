@@ -292,13 +292,29 @@ final class Gate {
 			return true;
 		}
 
-		$expected = Plugin::binding( self::posted_form_id() );
+		$submitted = self::posted_form_id();
+		$expected  = Plugin::binding( $submitted );
 
 		if ( '' === $expected ) {
 			return true;
 		}
 
-		return hash_equals( $expected, $actual );
+		if ( hash_equals( $expected, $actual ) ) {
+			return true;
+		}
+
+		// The IDs differ. On a multilingual site that is routine: one logical
+		// form has a post per language, and a challenge minted on one language's
+		// page can legitimately be spent on its translation — after a language
+		// switch, or from a page cached before the render-time fix landed.
+		$challenge_form_id = Plugin::binding_form_id( $actual );
+
+		if ( $challenge_form_id < 1 ) {
+			// Not a binding we produced.
+			return false;
+		}
+
+		return Translation::same_form( $challenge_form_id, $submitted );
 	}
 
 	/**

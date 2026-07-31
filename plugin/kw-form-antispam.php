@@ -3,7 +3,7 @@
  * Plugin Name:       KW Form Antispam
  * Plugin URI:        https://kreiswolke.com/kw-form-antispam/
  * Description:       Proof-of-work spam protection for Kadence Advanced Form blocks. Challenges are issued and verified by your own server: no third-party service, no outbound requests, no cookies, no personal data.
- * Version:           0.2.0
+ * Version:           0.2.1
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Author:            Kreiswolke
@@ -26,7 +26,7 @@ if ( defined( 'KWFA_VERSION' ) ) {
 	return;
 }
 
-define( 'KWFA_VERSION', '0.2.0' );
+define( 'KWFA_VERSION', '0.2.1' );
 define( 'KWFA_PLUGIN_FILE', __FILE__ );
 define( 'KWFA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'KWFA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

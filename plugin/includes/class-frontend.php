@@ -38,6 +38,21 @@ final class Frontend {
 	const ANCHOR_BLOCK = 'kadence/advanced-form-submit';
 
 	/**
+	 * The block that owns the form, and whose `id` attribute Kadence submits.
+	 */
+	const FORM_BLOCK = 'kadence/advanced-form';
+
+	/**
+	 * Stack of form IDs for the forms currently being rendered.
+	 *
+	 * A stack rather than a single value because Kadence guards against forms
+	 * nested inside themselves rather than forbidding nesting outright.
+	 *
+	 * @var int[]
+	 */
+	private static $form_stack = array();
+
+	/**
 	 * Whether the assets were already enqueued this request.
 	 *
 	 * @var bool
@@ -51,7 +66,51 @@ final class Frontend {
 	 */
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'register_assets' ) );
+
+		// Fires before a block renders, so the form's own ID is known by the
+		// time its inner submit block is rendered.
+		add_filter( 'render_block_data', array( __CLASS__, 'track_form' ), 10, 1 );
 		add_filter( 'render_block', array( __CLASS__, 'inject' ), 20, 2 );
+	}
+
+	/**
+	 * Remember which form is being rendered.
+	 *
+	 * `kadence/advanced-form` is rendered from `get_post( $attributes['id'] )`
+	 * and emits that same value as `_kb_adv_form_post_id`
+	 * (`class-kadence-blocks-advanced-form-block.php:326,421`). So the parent
+	 * block's `id` is, by definition, the ID the submission will carry.
+	 *
+	 * The submit block's own `formID` attribute is *not* a reliable substitute:
+	 * a translation plugin copies a form's post content verbatim into the
+	 * translated post, so the inner blocks keep the source form's `formID`
+	 * while the outer block points at the translation.
+	 *
+	 * @param array $parsed_block Parsed block, unmodified.
+	 * @return array
+	 */
+	public static function track_form( $parsed_block ) {
+		if ( is_array( $parsed_block )
+			&& isset( $parsed_block['blockName'] )
+			&& self::FORM_BLOCK === $parsed_block['blockName']
+		) {
+			$id = isset( $parsed_block['attrs']['id'] ) ? absint( $parsed_block['attrs']['id'] ) : 0;
+
+			self::$form_stack[] = $id;
+		}
+
+		return $parsed_block;
+	}
+
+	/**
+	 * The form currently being rendered, or 0 outside one.
+	 *
+	 * @return int
+	 */
+	private static function current_form_id() {
+		$depth = count( self::$form_stack );
+
+		return $depth > 0 ? self::$form_stack[ $depth - 1 ] : 0;
 	}
 
 	/**
@@ -100,7 +159,18 @@ final class Frontend {
 	 * @return string
 	 */
 	public static function inject( $block_content, $block ) {
-		if ( ! is_array( $block ) || empty( $block['blockName'] ) || self::ANCHOR_BLOCK !== $block['blockName'] ) {
+		if ( ! is_array( $block ) || empty( $block['blockName'] ) ) {
+			return $block_content;
+		}
+
+		if ( self::FORM_BLOCK === $block['blockName'] ) {
+			// The form has finished rendering, inner blocks and all.
+			array_pop( self::$form_stack );
+
+			return $block_content;
+		}
+
+		if ( self::ANCHOR_BLOCK !== $block['blockName'] ) {
 			return $block_content;
 		}
 
@@ -115,11 +185,39 @@ final class Frontend {
 			return $block_content;
 		}
 
-		$form_id = isset( $block['attrs']['formID'] ) ? absint( $block['attrs']['formID'] ) : 0;
+		$form_id = self::resolve_form_id( $block );
 
 		self::enqueue();
 
 		return self::widget_html( $form_id ) . $block_content;
+	}
+
+	/**
+	 * Which form this submit button belongs to.
+	 *
+	 * The challenge is bound to this ID, and the submission is checked against
+	 * the ID Kadence posts, so the two have to be derived the same way or every
+	 * submission is rejected. The parent block's `id` *is* the posted value, so
+	 * it is always preferred.
+	 *
+	 * The submit block's `formID` is only a fallback, for a submit block
+	 * rendered outside a `kadence/advanced-form` wrapper. It is put through the
+	 * translation layer because on a translated page it still holds the source
+	 * form's ID.
+	 *
+	 * @param array $block Parsed submit block.
+	 * @return int
+	 */
+	private static function resolve_form_id( $block ) {
+		$from_parent = self::current_form_id();
+
+		if ( $from_parent > 0 ) {
+			return $from_parent;
+		}
+
+		$from_attrs = isset( $block['attrs']['formID'] ) ? absint( $block['attrs']['formID'] ) : 0;
+
+		return $from_attrs > 0 ? Translation::current_id( $from_attrs ) : 0;
 	}
 
 	/**

@@ -192,4 +192,18 @@ final class Plugin {
 
 		return $form_id > 0 ? 'f' . $form_id : '';
 	}
+
+	/**
+	 * The form ID inside a binding string.
+	 *
+	 * @param string $binding Value returned by binding().
+	 * @return int 0 when the string is not one of ours.
+	 */
+	public static function binding_form_id( $binding ) {
+		if ( ! is_string( $binding ) || ! preg_match( '/\Af([1-9][0-9]*)\z/', $binding, $matches ) ) {
+			return 0;
+		}
+
+		return absint( $matches[1] );
+	}
 }

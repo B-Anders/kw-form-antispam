@@ -29,7 +29,10 @@ abstract class TestCase extends PHPUnitTestCase {
 	private static $request_statics = array(
 		'Kreiswolke\\FormAntispam\\Plugin'   => array( 'operational' => null ),
 		'Kreiswolke\\FormAntispam\\Secret'   => array( 'cache' => null ),
-		'Kreiswolke\\FormAntispam\\Status'   => array( 'cache' => null ),
+		'Kreiswolke\\FormAntispam\\Status'   => array(
+			'cache'    => null,
+			'reported' => false,
+		),
 		'Kreiswolke\\FormAntispam\\Frontend' => array( 'enqueued' => false ),
 		'Kreiswolke\\FormAntispam\\Gate'     => array(
 			'decision'       => null,
@@ -97,6 +100,7 @@ abstract class TestCase extends PHPUnitTestCase {
 		}
 
 		$this->set_static( 'Kreiswolke\\FormAntispam\\Plugin', 'operational', null );
+		$this->set_static( 'Kreiswolke\\FormAntispam\\Status', 'reported', false );
 	}
 
 	/**
@@ -250,5 +254,75 @@ abstract class TestCase extends PHPUnitTestCase {
 	 */
 	protected function replay_markers() {
 		return WP_Stub_State::transient_names( \Kreiswolke\FormAntispam\Replay::PREFIX );
+	}
+
+	/**
+	 * Render one Kadence Advanced Form the way Kadence does.
+	 *
+	 * The `kadence/advanced-form` block opens, its inner submit block renders,
+	 * then the form block closes. `$submit_form_id` defaults to `$form_block_id`
+	 * — passing a different value models a translated page, where the form block
+	 * points at the translation while the submit block copied into it still
+	 * carries the source form's `formID`.
+	 *
+	 * @param int      $form_block_id  `id` on the kadence/advanced-form block.
+	 * @param int|null $submit_form_id `formID` on the inner submit block.
+	 * @return string The submit block's rendered HTML, widget included.
+	 */
+	protected function render_form( $form_block_id, $submit_form_id = null ) {
+		$form_block = array(
+			'blockName' => 'kadence/advanced-form',
+			'attrs'     => array( 'id' => (string) $form_block_id ),
+		);
+
+		$submit_block = array(
+			'blockName' => 'kadence/advanced-form-submit',
+			'attrs'     => array(
+				'formID'   => (string) ( null === $submit_form_id ? $form_block_id : $submit_form_id ),
+				'uniqueID' => $form_block_id . '_abc',
+			),
+		);
+
+		\Kreiswolke\FormAntispam\Frontend::track_form( $form_block );
+
+		$html = \Kreiswolke\FormAntispam\Frontend::inject( '<button type="submit">Send</button>', $submit_block );
+
+		\Kreiswolke\FormAntispam\Frontend::inject( '<form>…</form>', $form_block );
+
+		return $html;
+	}
+
+	/**
+	 * Render a page carrying several forms.
+	 *
+	 * @param array $forms List of ints, or of array( form block id, submit formID ).
+	 * @return string[] Rendered HTML per form, in order.
+	 */
+	protected function render_page( array $forms ) {
+		$rendered = array();
+
+		foreach ( $forms as $form ) {
+			if ( is_array( $form ) ) {
+				$rendered[] = $this->render_form( $form[0], isset( $form[1] ) ? $form[1] : null );
+			} else {
+				$rendered[] = $this->render_form( $form );
+			}
+		}
+
+		return $rendered;
+	}
+
+	/**
+	 * The form ID a rendered widget will request a challenge for.
+	 *
+	 * @param string $html Rendered submit-block HTML.
+	 * @return int 0 when no widget was injected.
+	 */
+	protected function bound_form_id( $html ) {
+		if ( ! preg_match( '/form_id=(\d+)/', $html, $matches ) ) {
+			return 0;
+		}
+
+		return (int) $matches[1];
 	}
 }

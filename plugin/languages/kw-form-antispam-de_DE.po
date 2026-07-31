@@ -2,7 +2,7 @@
 # Copyright (C) 2026 Kreiswolke
 # This file is distributed under the GPL-2.0-or-later license.
 msgid ""
-msgstr "Project-Id-Version: KW Form Antispam 0.2.0\nReport-Msgid-Bugs-To: https://wordpress.org/support/plugin/kw-form-antispam\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPO-Revision-Date: 2026-07-31 13:33+0000\nLanguage: de_DE\nPlural-Forms: nplurals=2; plural=(n != 1);\nX-Domain: kw-form-antispam\n"
+msgstr "Project-Id-Version: KW Form Antispam 0.2.1\nReport-Msgid-Bugs-To: https://wordpress.org/support/plugin/kw-form-antispam\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPO-Revision-Date: 2026-07-31 18:02+0000\nLanguage: de_DE\nPlural-Forms: nplurals=2; plural=(n != 1);\nX-Domain: kw-form-antispam\n"
 
 msgid "A challenge could not be generated on the last request."
 msgstr "Bei der letzten Anfrage konnte keine Aufgabe erzeugt werden."
@@ -21,6 +21,9 @@ msgstr "Ich bin kein Roboter"
 
 msgid "Just a moment — finishing the spam check, then sending your message."
 msgstr "Einen Moment – der Spamschutz wird noch geprüft, dann wird Ihre Nachricht gesendet."
+
+msgid "A translation plugin is active but could not map a form to its original, so the per-form check was skipped for a submission. Check that your Kadence forms are set to translatable."
+msgstr "Ein Übersetzungs-Plugin ist aktiv, konnte ein Formular aber nicht seinem Original zuordnen. Die formularbezogene Prüfung wurde für eine Einsendung übersprungen. Bitte prüfen Sie, ob Ihre Kadence-Formulare als übersetzbar eingestellt sind."
 
 msgid "KW Form Antispam: spam protection is currently OFF. %s Form submissions are still being accepted — the plugin never blocks a form because of its own failure."
 msgstr "KW Form Antispam: Der Spamschutz ist derzeit AUS. %s Formulareinsendungen werden weiterhin angenommen – das Plugin blockiert ein Formular niemals wegen eines eigenen Fehlers."

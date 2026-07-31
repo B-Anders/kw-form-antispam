@@ -252,6 +252,110 @@ test( 'the targets are decided before Kadence clears the form', async () => {
 	assert.strictEqual( b.widget.kwfaVerifyCalls, bVerifies );
 } );
 
+// -----------------------------------------------------------------------------
+// Multilingual pages
+// -----------------------------------------------------------------------------
+
+/**
+ * The pilot site's shape: three forms, German source and English translation.
+ * A translated page renders the English posts, so `_kb_adv_form_id` — which is
+ * `strval( $attributes['id'] ) . '-cpt-id'` — carries the English IDs and is
+ * distinct from the German ones. The scoping built for multi-form pages has to
+ * keep working on those values.
+ */
+const ENGLISH_PAGE = [ 2095, 2099, 2103 ];
+const GERMAN_PAGE = [ 2066, 2070, 2074 ];
+
+test( 'scoped re-arm works on a translated multi-form page', async () => {
+	const ctx = await setup( { formIds: ENGLISH_PAGE } );
+	const contact = ctx.byFormId[ 2095 ];
+
+	for ( const entry of ctx.forms ) {
+		entry.widget.setState( 'verified' );
+	}
+	await tick();
+
+	const before = ctx.forms.map( ( entry ) => entry.widget.kwfaVerifyCalls );
+	const quotePayload = ctx.byFormId[ 2099 ].widget.kwfaPayload();
+
+	await submitForm( contact );
+	dispatchSuccess( ctx, '2095-cpt-id' );
+	await tick( 20 );
+
+	assert.ok( contact.widget.kwfaVerifyCalls > before[ 0 ], 'The submitted form is re-armed.' );
+	assert.strictEqual( ctx.byFormId[ 2099 ].widget.kwfaVerifyCalls, before[ 1 ], 'Quote untouched.' );
+	assert.strictEqual( ctx.byFormId[ 2103 ].widget.kwfaVerifyCalls, before[ 2 ], 'Newsletter untouched.' );
+	assert.strictEqual( ctx.byFormId[ 2099 ].widget.kwfaPayload(), quotePayload );
+} );
+
+test( 'a source-language uniqueId does not re-arm the translated form', async () => {
+	// The two are different posts, so their `_kb_adv_form_id` values differ and
+	// the uniqueId lookup finds nothing. The spent-payload fallback then re-arms
+	// only what actually submitted — never the whole page.
+	const ctx = await setup( { formIds: ENGLISH_PAGE } );
+	const contact = ctx.byFormId[ 2095 ];
+	const quote = ctx.byFormId[ 2099 ];
+
+	quote.widget.setState( 'verified' );
+	await tick();
+	const quoteVerifies = quote.widget.kwfaVerifyCalls;
+	const quotePayload = quote.widget.kwfaPayload();
+
+	await submitForm( contact );
+
+	// The German ID for the same logical form: not present on this page.
+	dispatchSuccess( ctx, '2066-cpt-id' );
+	await tick( 20 );
+
+	assert.strictEqual( contact.widget.kwfaPayload(), '', 'The form that submitted is still re-armed.' );
+	assert.strictEqual( quote.widget.kwfaVerifyCalls, quoteVerifies, 'And the others are still spared.' );
+	assert.strictEqual( quote.widget.kwfaPayload(), quotePayload );
+} );
+
+test( 'the translated forms still submit after a sibling succeeds', async () => {
+	const ctx = await setup( { formIds: ENGLISH_PAGE } );
+
+	for ( const entry of ctx.forms ) {
+		entry.widget.setState( 'verified' );
+	}
+	await tick();
+
+	const payloads = ctx.forms.map( ( entry ) => entry.widget.kwfaPayload() );
+
+	await submitForm( ctx.byFormId[ 2095 ] );
+	dispatchSuccess( ctx, '2095-cpt-id' );
+	await tick( 20 );
+
+	click( ctx.byFormId[ 2099 ] );
+	click( ctx.byFormId[ 2103 ] );
+	await tick( 20 );
+
+	assert.strictEqual( ctx.byFormId[ 2099 ].kadence.submissions.length, 1 );
+	assert.strictEqual( ctx.byFormId[ 2103 ].kadence.submissions.length, 1 );
+	assert.strictEqual( ctx.byFormId[ 2099 ].kadence.lastPayload, payloads[ 1 ] );
+	assert.strictEqual( ctx.byFormId[ 2103 ].kadence.lastPayload, payloads[ 2 ] );
+} );
+
+test( 'source-language pages behave identically', async () => {
+	const ctx = await setup( { formIds: GERMAN_PAGE } );
+	const contact = ctx.byFormId[ 2066 ];
+
+	for ( const entry of ctx.forms ) {
+		entry.widget.setState( 'verified' );
+	}
+	await tick();
+
+	const before = ctx.forms.map( ( entry ) => entry.widget.kwfaVerifyCalls );
+
+	await submitForm( contact );
+	dispatchSuccess( ctx, '2066-cpt-id' );
+	await tick( 20 );
+
+	assert.ok( contact.widget.kwfaVerifyCalls > before[ 0 ] );
+	assert.strictEqual( ctx.byFormId[ 2070 ].widget.kwfaVerifyCalls, before[ 1 ] );
+	assert.strictEqual( ctx.byFormId[ 2074 ].widget.kwfaVerifyCalls, before[ 2 ] );
+} );
+
 test( 'a held submission on one form does not block another', async () => {
 	const ctx = await setup( { formIds: [ 42, 77 ] } );
 	const a = ctx.byFormId[ 42 ];

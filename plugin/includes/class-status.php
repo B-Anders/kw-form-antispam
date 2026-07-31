@@ -33,6 +33,13 @@ final class Status {
 	private static $cache = null;
 
 	/**
+	 * Whether a failure was recorded during this request.
+	 *
+	 * @var bool
+	 */
+	private static $reported = false;
+
+	/**
 	 * Hook the admin notice.
 	 *
 	 * @return void
@@ -58,6 +65,8 @@ final class Status {
 			return;
 		}
 
+		self::$reported = true;
+
 		if ( self::get_code() === $code ) {
 			return;
 		}
@@ -69,9 +78,19 @@ final class Status {
 	/**
 	 * Clear the recorded failure. Called when a verification completes cleanly.
 	 *
+	 * A request can be degraded and still succeed — an unresolvable translation
+	 * mapping is accepted, not rejected — so "the verification passed" is not
+	 * evidence that nothing is wrong. Anything reported during this request
+	 * survives it; otherwise the notice would be wiped by the very submission
+	 * that raised it and the degradation would be silent.
+	 *
 	 * @return void
 	 */
 	public static function clear() {
+		if ( self::$reported ) {
+			return;
+		}
+
 		if ( '' === self::get_code() ) {
 			return;
 		}
@@ -140,6 +159,7 @@ final class Status {
 			'verifier_error'           => esc_html__( 'Verification raised an unexpected error on the last submission.', 'kw-form-antispam' ),
 			'challenge_error'          => esc_html__( 'A challenge could not be generated on the last request.', 'kw-form-antispam' ),
 			'replay_store_unavailable' => esc_html__( 'The single-use store (transients) is not writable, so a solved challenge could be reused until it expires.', 'kw-form-antispam' ),
+			'translation_unresolved'   => esc_html__( 'A translation plugin is active but could not map a form to its original, so the per-form check was skipped for a submission. Check that your Kadence forms are set to translatable.', 'kw-form-antispam' ),
 		);
 	}
 }
